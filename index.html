@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>小学生算术卡片</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 12%, #eef6ff 0%, #f8fafc 45%, #e2e8f0 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Fredoka", "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    /* 主应用容器：充满视口，防挤压 */
+    .app-container {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 24px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 24px);
+    }
+
+    /* 顶部控制栏 */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 20;
+      width: 100%;
+      padding: 4px 0 10px;
+    }
+
+    /* 选项胶囊菜单 */
+    .pill-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #1e293b;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 9px 34px 9px 15px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(203, 213, 225, 0.8);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      cursor: pointer;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pill-select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    /* 运算符切换大按钮组 */
+    .op-group {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 3px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(203, 213, 225, 0.8);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      gap: 5px;
+    }
+
+    .op-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.18s, color 0.18s, transform 0.1s;
+    }
+
+    .op-btn:hover {
+      color: #334155;
+    }
+
+    .op-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+    }
+
+    .op-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* 答题战绩统计徽章 */
+    .stats-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px 15px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(203, 213, 225, 0.8);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .stats-badge:active {
+      transform: scale(0.96);
+    }
+
+    .stats-star {
+      font-size: 16px;
+      filter: drop-shadow(0 1px 2px rgba(245, 158, 11, 0.35));
+    }
+
+    .stats-label {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .stats-num {
+      color: #2563eb;
+      font-size: 17px;
+      font-weight: 900;
+      min-width: 14px;
+      text-align: center;
+      display: inline-block;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .stats-num.bump {
+      transform: scale(1.35);
+      color: #10b981;
+    }
+
+    /* 连对火焰微胶囊 */
+    .streak-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffedd5 0%, #fee2e2 100%);
+      color: #ea580c;
+      font-size: 12px;
+      font-weight: 900;
+      border: 1px solid #fed7aa;
+      margin-left: 2px;
+      animation: streakPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .streak-pill.hidden {
+      display: none;
+    }
+
+    @keyframes streakPop {
+      0% { transform: scale(0.6); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    /* 浮动连击成就提示 */
+    .combo-toast {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(0);
+      background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+      color: #ffffff;
+      padding: 8px 22px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 900;
+      box-shadow: 0 10px 25px -4px rgba(239, 68, 68, 0.4);
+      pointer-events: none;
+      z-index: 100;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .combo-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-22px) scale(1.05);
+    }
+
+    /* 错题本入口 */
+    .wrong-btn {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(203, 213, 225, 0.8);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .wrong-btn.has-wrong {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #e11d48;
+    }
+
+    .wrong-btn.reviewing {
+      background: #e11d48;
+      color: #ffffff;
+      border-color: #e11d48;
+      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.35);
+    }
+
+    /* 音效开关按钮 */
+    .sound-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(203, 213, 225, 0.8);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 17px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s;
+    }
+
+    .sound-btn:active {
+      transform: scale(0.92);
+    }
+
+    .sound-btn.muted {
+      color: #94a3b8;
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      opacity: 0.7;
+    }
+
+    /* 核心工作区 */
+    .workspace {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    /* 卡片舞台区域 */
+    .card-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      perspective: 1400px;
+    }
+
+    /* 真实悬浮动效 */
+    .floating-box {
+      animation: float 3.6s ease-in-out infinite;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-16px);
+      }
+    }
+
+    /* 呼吸悬浮阴影 */
+    .shadow {
+      background: rgba(15, 23, 42, 0.12);
+      border-radius: 50%;
+      margin: 22px auto 0;
+      filter: blur(10px);
+      animation: shadowPulse 3.6s ease-in-out infinite;
+    }
+
+    @keyframes shadowPulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.18;
+      }
+      50% {
+        transform: scale(0.8);
+        opacity: 0.08;
+      }
+    }
+
+    /* 翻转卡片本体 */
+    .card {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card.dragging {
+      transition: none;
+    }
+
+    /* 卡片正反面样式 */
+    .card-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.09), 0 3px 8px rgba(0, 0, 0, 0.04);
+      border: 5px solid #ffffff;
+      padding: 32px 40px;
+    }
+
+    .card-front {
+      background: #ffffff;
+      color: #1e293b;
+    }
+
+    .card-back {
+      background: #ffffff;
+      color: #0f172a;
+      transform: rotateY(180deg);
+    }
+
+    /* 算式文字大号排版与丝滑抽牌过渡动效 */
+    .formula {
+      font-weight: 800;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      white-space: nowrap;
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
+      will-change: transform, opacity;
+    }
+
+    /* 旧题目向左滑出并淡隐 */
+    .formula.slide-out-left {
+      transform: translateX(-45px) scale(0.94);
+      opacity: 0;
+    }
+
+    /* 新题目从右侧带着弹簧曲线滑入居中 */
+    .formula.slide-in-right {
+      animation: slideInRight 0.26s cubic-bezier(0.18, 0.9, 0.32, 1.15) forwards;
+    }
+
+    @keyframes slideInRight {
+      0% {
+        transform: translateX(50px) scale(0.94);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* 答对庆祝卡片向上小欢呼 */
+    @keyframes cardCheer {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-12px) scale(1.02); }
+    }
+    .card.cheer {
+      animation: cardCheer 0.4s ease-out;
+    }
+
+    /* 切题时整张卡片的微触觉抽牌效果 */
+    @keyframes cardShuffle {
+      0% { transform: scale(1); }
+      45% { transform: scale(0.985); }
+      100% { transform: scale(1); }
+    }
+    .card.shuffle {
+      animation: cardShuffle 0.26s ease-out;
+    }
+
+    .num {
+      color: #2563eb;
+    }
+
+    .op {
+      color: #f97316;
+    }
+
+    .equal {
+      color: #94a3b8;
+    }
+
+    .bracket {
+      color: #475569;
+      font-weight: 900;
+      font-size: 1.15em;
+      margin: 0 2px;
+    }
+
+    /* 输入聚焦区域（卡片上的问号输入框） */
+    .input-box {
+      color: #2563eb;
+      background: #eff6ff;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 24px;
+      border: 4px solid #3b82f6;
+      font-weight: 900;
+      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.18);
+      transition: all 0.18s cubic-bezier(0.34, 1.5, 0.64, 1);
+    }
+
+    /* 键盘输入时数字弹跳动效 */
+    @keyframes numPop {
+      0% { transform: scale(0.8); }
+      55% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+    .input-box.pop {
+      animation: numPop 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .input-box.empty {
+      color: #f59e0b;
+      background: #fef3c7;
+      border: 4px dashed #f59e0b;
+      box-shadow: none;
+    }
+
+    /* 答对微弹跳光环 */
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.16); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0.3); }
+      60% { transform: scale(1.08); box-shadow: 0 0 0 22px rgba(16, 185, 129, 0); }
+      100% { transform: scale(1.12); }
+    }
+
+    .input-box.correct {
+      border-color: #10b981 !important;
+      background: #d1fae5 !important;
+      color: #059669 !important;
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.22);
+      animation: correctPulse 0.4s cubic-bezier(0.34, 1.5, 0.64, 1) forwards;
+    }
+
+    /* 答错剧烈晃动警告 */
+    @keyframes intenseShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-12px); }
+      40% { transform: translateX(12px); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
+    }
+
+    .input-box.wrong {
+      border-color: #ef4444 !important;
+      background: #fee2e2 !important;
+      color: #dc2626 !important;
+      box-shadow: 0 0 0 10px rgba(239, 68, 68, 0.25);
+      animation: intenseShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    /* 答案高亮块 */
+    .ans-number {
+      color: #059669;
+      background: #d1fae5;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 24px;
+      border: 4px solid #10b981;
+      font-weight: 900;
+    }
+
+    /* 键盘容器 */
+    .keypad-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 32px;
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.08), 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .key-btn {
+      border-radius: 22px;
+      border: 1px solid #e2e8f0;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      color: #0f172a;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, transform 0.06s ease, box-shadow 0.06s ease;
+      box-shadow: 0 4px 0 #cbd5e1, 0 6px 14px rgba(15, 23, 42, 0.04);
+      touch-action: manipulation;
+    }
+
+    .key-btn:hover {
+      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    }
+
+    .key-btn:active {
+      transform: translateY(3px) scale(0.98);
+      background: #f1f5f9;
+      box-shadow: 0 1px 0 #cbd5e1, 0 2px 4px rgba(15, 23, 42, 0.04);
+    }
+
+    .key-btn.action-clear {
+      color: #64748b;
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      font-weight: 700;
+    }
+
+    .key-btn.action-back {
+      color: #2563eb;
+      background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+      border-color: #bfdbfe;
+      box-shadow: 0 4px 0 #93c5fd, 0 6px 14px rgba(37, 99, 235, 0.06);
+    }
+
+    .key-btn.action-back:active {
+      transform: translateY(3px) scale(0.98);
+      box-shadow: 0 1px 0 #93c5fd;
+    }
+
+    .next-btn {
+      font-weight: 800;
+      color: #ffffff;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #1d4ed8, 0 10px 24px rgba(37, 99, 235, 0.3);
+      transition: background 0.2s, transform 0.06s ease, box-shadow 0.06s ease;
+    }
+
+    .next-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #1d4ed8, 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    /* =========================================================================
+       iPad 方案 1：竖屏模式 (PORTRAIT)
+       - 卡片在上方居中大面积展示
+       - 键盘在下方大按键触控
+       ========================================================================= */
+    .workspace {
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 10px 0;
+    }
+
+    .card-section {
+      width: 100%;
+    }
+
+    .card {
+      width: min(720px, 92vw);
+      height: min(380px, 38vh);
+    }
+
+    .shadow {
+      width: min(560px, 76vw);
+      height: 24px;
+    }
+
+    .formula {
+      font-size: 74px;
+    }
+    .formula.count-3 {
+      font-size: 54px;
+      gap: 10px;
+    }
+    .formula.has-bracket {
+      font-size: 48px;
+      gap: 8px;
+    }
+
+    .input-box, .ans-number {
+      min-width: 90px;
+      height: 90px;
+      font-size: 64px;
+    }
+    .formula.count-3 .input-box, .formula.count-3 .ans-number {
+      min-width: 74px;
+      height: 74px;
+      font-size: 50px;
+    }
+    .formula.has-bracket .input-box, .formula.has-bracket .ans-number {
+      min-width: 68px;
+      height: 68px;
+      font-size: 44px;
+    }
+
+    .keypad-section {
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .keypad {
+      width: min(480px, 92vw);
+      padding: 16px;
+      gap: 12px;
+    }
+
+    .key-btn {
+      height: 72px;
+      font-size: 34px;
+    }
+    .key-btn.action-clear {
+      font-size: 20px;
+    }
+    .key-btn.action-back {
+      font-size: 26px;
+    }
+
+    .next-btn {
+      padding: 14px 44px;
+      font-size: 18px;
+    }
+
+    /* =========================================================================
+       iPad 方案 2：横屏模式 (LANDSCAPE 左右分栏)
+       - 左右布局：左边大卡片，右边大键盘
+       - 无论浏览器窗口还是 iPad，只要宽度大于高度即刻触发！
+       ========================================================================= */
+    @media (orientation: landscape), (min-aspect-ratio: 1.02) {
+      .workspace {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-evenly !important;
+        gap: 36px !important;
+        padding: 10px 24px !important;
+      }
+
+      /* 左边：大卡片区域 */
+      .card-section {
+        flex: 1.25 !important;
+        max-width: 720px !important;
+        width: auto !important;
+      }
+
+      .card {
+        width: min(680px, 54vw) !important;
+        height: min(420px, 66vh) !important;
+      }
+
+      .shadow {
+        width: 80% !important;
+        height: 24px !important;
+      }
+
+      .formula {
+        font-size: 72px !important;
+      }
+      .formula.count-3 {
+        font-size: 52px !important;
+        gap: 10px !important;
+      }
+      .formula.has-bracket {
+        font-size: 46px !important;
+        gap: 8px !important;
+      }
+
+      .input-box, .ans-number {
+        min-width: 88px !important;
+        height: 88px !important;
+        font-size: 62px !important;
+      }
+      .formula.count-3 .input-box, .formula.count-3 .ans-number {
+        min-width: 72px !important;
+        height: 72px !important;
+        font-size: 48px !important;
+      }
+      .formula.has-bracket .input-box, .formula.has-bracket .ans-number {
+        min-width: 66px !important;
+        height: 66px !important;
+        font-size: 42px !important;
+      }
+
+      /* 右边：大键盘区域 */
+      .keypad-section {
+        flex: 0.85 !important;
+        max-width: 400px !important;
+        min-width: 340px !important;
+        gap: 16px !important;
+      }
+
+      .keypad {
+        width: 100% !important;
+        padding: 16px !important;
+        gap: 12px !important;
+      }
+
+      .key-btn {
+        height: 68px !important;
+        font-size: 32px !important;
+      }
+      .key-btn.action-clear {
+        font-size: 20px !important;
+      }
+      .key-btn.action-back {
+        font-size: 26px !important;
+      }
+
+      .next-btn {
+        width: 100% !important;
+        padding: 15px 0 !important;
+        font-size: 18px !important;
+        text-align: center !important;
+      }
+    }
+
+    /* JavaScript 强力辅助类：保证在各种浏览器缩放和 iPad 模式下 100% 触发左右分栏 */
+    .app-container.is-landscape .workspace {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-evenly !important;
+      gap: 36px !important;
+      padding: 10px 24px !important;
+    }
+    .app-container.is-landscape .card-section {
+      flex: 1.25 !important;
+      max-width: 720px !important;
+      width: auto !important;
+    }
+    .app-container.is-landscape .card {
+      width: min(680px, 54vw) !important;
+      height: min(420px, 66vh) !important;
+    }
+    .app-container.is-landscape .shadow {
+      width: 80% !important;
+      height: 24px !important;
+    }
+    .app-container.is-landscape .formula {
+      font-size: 72px !important;
+    }
+    .app-container.is-landscape .formula.count-3 {
+      font-size: 52px !important;
+    }
+    .app-container.is-landscape .formula.has-bracket {
+      font-size: 46px !important;
+    }
+    .app-container.is-landscape .keypad-section {
+      flex: 0.85 !important;
+      max-width: 400px !important;
+      min-width: 340px !important;
+      gap: 16px !important;
+    }
+    .app-container.is-landscape .keypad {
+      width: 100% !important;
+      padding: 16px !important;
+      gap: 12px !important;
+    }
+    .app-container.is-landscape .key-btn {
+      height: 68px !important;
+      font-size: 32px !important;
+    }
+    .app-container.is-landscape .next-btn {
+      width: 100% !important;
+      padding: 15px 0 !important;
+      font-size: 18px !important;
+      text-align: center !important;
+    }
+
+    /* Calm editorial interface */
+    :root {
+      color-scheme: light;
+      --ink: #1e302b;
+      --muted: #82918b;
+      --line: #e6e9e3;
+      --paper: #f5f6f1;
+      --accent: #d9784e;
+      --green: #315c4c;
+    }
+    html, body { background: var(--paper); color: var(--ink); }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    .app-container { padding: max(env(safe-area-inset-top), 24px) max(env(safe-area-inset-right), 5vw) max(env(safe-area-inset-bottom), 24px) max(env(safe-area-inset-left), 5vw); }
+    .controls-bar { justify-content: space-between; gap: 12px; padding: 0 0 18px; border-bottom: 1px solid var(--line); }
+    .controls-bar::before { content: "数感练习"; margin-right: auto; color: var(--ink); font-size: 16px; font-weight: 750; letter-spacing: .08em; }
+    .pill-select, .stats-badge, .wrong-btn, .sound-btn, .op-group { background-color: #fff; border: 1px solid var(--line); box-shadow: none; backdrop-filter: none; }
+    .pill-select { min-height: 42px; padding: 9px 34px 9px 14px; border-radius: 10px; color: #40534c; font-size: 13px; font-weight: 600; }
+    .op-group { gap: 2px; padding: 3px; border-radius: 10px; }
+    .op-btn { width: 34px; height: 34px; border-radius: 7px; color: #98a49e; font-size: 17px; }
+    .op-btn.active { background: var(--green); color: white; box-shadow: none; }
+    .stats-badge, .wrong-btn { min-height: 40px; padding: 7px 12px; border-radius: 10px; color: #62716b; font-size: 12px; }
+    .stats-star { filter: none; font-size: 14px; }
+    .stats-label { color: var(--muted); font-size: 12px; }
+    .stats-num { color: var(--green); font-size: 16px; }
+    .wrong-btn.has-wrong { background: #fff8f4; border-color: #f0d5c8; color: #a95b3c; }
+    .wrong-btn.reviewing { background: var(--accent); border-color: var(--accent); color: white; box-shadow: none; }
+    .sound-btn { width: 40px; height: 40px; border-radius: 10px; font-size: 15px; }
+    .workspace { gap: clamp(24px, 6vw, 88px) !important; justify-content: center !important; padding: 28px 0 !important; }
+    .card-section { max-width: 660px !important; }
+    .card { width: min(660px, 52vw) !important; height: min(390px, 58vh) !important; }
+    .card-face { border: 1px solid #e9ece6; border-radius: 24px; padding: 28px; box-shadow: 0 24px 60px rgba(33, 53, 45, .08); }
+    .card-front { background: #fff; }
+    .card-back { background: #fbfcf9; }
+    .formula { letter-spacing: 0; gap: 18px; }
+    .num { color: var(--ink); }
+    .op { color: var(--accent); }
+    .equal { color: #b3bdb7; }
+    .input-box { color: var(--green); background: #f2f6f1; border: 1px solid #cbd9cf; border-radius: 14px; box-shadow: none; }
+    .ans-number { color: var(--green); background: #edf4ee; border: 1px solid #cbd9cf; border-radius: 14px; }
+    .shadow { filter: blur(14px); opacity: .55; }
+    .keypad-section { max-width: 340px !important; min-width: min(300px, 34vw) !important; gap: 14px !important; }
+    .keypad { width: 100% !important; padding: 10px !important; gap: 7px !important; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.72); box-shadow: 0 12px 36px rgba(33,53,45,.045); backdrop-filter: blur(14px); }
+    .key-btn { height: 58px !important; border: 0; border-radius: 12px; background: transparent; color: var(--ink); font-size: 23px !important; font-weight: 550; box-shadow: none; }
+    .key-btn:hover, .key-btn:active { background: #f0f3ed; box-shadow: none; transform: none; }
+    .key-btn.action-clear { color: var(--muted); background: transparent; font-size: 13px !important; }
+    .key-btn.action-back { color: var(--green); background: #edf2ed; border: 0; box-shadow: none; font-size: 21px !important; }
+    .next-btn { width: 100%; padding: 14px 20px !important; border: 1px solid #dfe5df; border-radius: 12px; background: transparent; color: #53665e; box-shadow: none; font-size: 14px !important; font-weight: 650; }
+    .next-btn:active { transform: scale(.99); box-shadow: none; }
+    @media (max-width: 760px) {
+      .app-container { padding: max(env(safe-area-inset-top), 14px) 16px max(env(safe-area-inset-bottom), 14px); }
+      .controls-bar { justify-content: center; gap: 7px; padding-bottom: 12px; }
+      .controls-bar::before { width: 100%; text-align: left; padding-bottom: 3px; }
+      .pill-select { font-size: 12px; padding-left: 10px; padding-right: 28px; }
+      .stats-badge { gap: 4px; padding: 6px 9px; }
+      .wrong-btn { padding: 6px 9px; }
+      .workspace { flex-direction: column !important; gap: 12px !important; padding: 12px 0 !important; }
+      .card-section { flex: none !important; width: 100% !important; }
+      .keypad-section { flex: none !important; }
+      .card { width: min(92vw, 560px) !important; height: min(34vh, 290px) !important; }
+      .card-face { border-radius: 20px; padding: 18px 12px; }
+      .formula { font-size: clamp(38px, 10vw, 58px) !important; gap: 10px; }
+      .formula.count-3 { font-size: clamp(30px, 7vw, 42px) !important; gap: 7px; }
+      .formula.has-bracket { font-size: clamp(26px, 6vw, 38px) !important; gap: 5px; }
+      .input-box, .ans-number { min-width: 64px; height: 64px; font-size: 42px; border-radius: 12px; }
+      .formula.count-3 .input-box, .formula.count-3 .ans-number { min-width: 54px; height: 54px; font-size: 36px; }
+      .formula.has-bracket .input-box, .formula.has-bracket .ans-number { min-width: 48px; height: 48px; font-size: 30px; }
+      .keypad-section { width: min(100%, 400px) !important; max-width: 400px !important; min-width: 0 !important; gap: 8px !important; }
+      .keypad { padding: 6px !important; gap: 3px !important; border-radius: 15px; }
+      .key-btn { height: clamp(38px, 6.5vh, 52px) !important; font-size: 20px !important; border-radius: 9px; }
+      .next-btn { padding: 10px !important; }
+    }
+
+    /* Reference: soft blue tablet interface */
+    html, body { background: radial-gradient(ellipse at 70% 65%, #c2d3fb, #e7effc 70%); color: #15171c; }
+    .app-container { padding: max(env(safe-area-inset-top), 4vh) 3.5vw max(env(safe-area-inset-bottom), 4vh); }
+    .controls-bar { justify-content: center; gap: 12px; padding: 16px 20px; border: 1px solid rgba(255,255,255,.9); border-radius: 38px; background: rgba(242,246,255,.68); box-shadow: 0 15px 32px rgba(75,111,185,.14), inset 0 1px 2px white; }
+    .controls-bar::before { display: none; }
+    .range-group, .type-group, .op-group { display:flex; align-items:center; padding:4px; gap:2px; border:1px solid rgba(255,255,255,.85); border-radius:24px; background:rgba(246,248,255,.85); box-shadow:0 5px 15px rgba(78,108,166,.12); }
+    .range-btn, .type-btn, .op-btn { border:0; border-radius:19px; background:transparent; color:#20232a; cursor:pointer; font-weight:650; }
+    .range-btn, .type-btn { padding:11px 15px; font-size:16px; white-space:nowrap; }
+    .range-btn.active, .type-btn.active, .op-btn.active { color:white; background:linear-gradient(#3985ff,#0051f6); box-shadow:0 5px 12px rgba(0,80,240,.25); }
+    .type-btn:focus-visible { outline: 3px solid #81aaff; outline-offset: 2px; }
+    .op-btn { width:46px; height:42px; font-size:24px; }
+    .pill-select, .wrong-btn, .stats-badge, .sound-btn { background:rgba(246,248,255,.8); border:1px solid rgba(255,255,255,.8); border-radius:18px; box-shadow:none; }
+    .stats-label { color:#596273; font-size:14px; } .stats-num { color:#075cff; font-size:20px; }
+    .stats-star { display:none; } .streak-pill { background:transparent; border:0; color:#075cff; }
+    .sound-btn { width:45px; height:42px; }
+    .sound-btn svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .sound-btn .mute-line { display: none; }
+    .sound-btn.muted .mute-line { display: block; }
+    .sound-btn.muted .sound-wave { display: none; }
+    .workspace { gap:4vw !important; }
+    .card-section { max-width: 780px !important; }
+    .card { width:min(780px, 57vw) !important; height:min(460px, 52vh) !important; }
+    .floating-box { animation:none; }
+    .card-face { background:linear-gradient(145deg,#fbfcff,#eff3fb); border:1px solid white; border-radius:48px; box-shadow:0 8px 0 #e8eefb, 0 17px 0 #d9e5fb, 0 28px 35px rgba(71,112,196,.25); }
+    .formula { font-size:clamp(50px,7vw,100px) !important; font-weight:750; gap:16px; }
+    .num, .op, .equal, .bracket { color:#15171c; }
+    .input-box { color:#15171c; background:#fff4d1; border:4px dashed #ffb800; border-radius:27px; box-shadow:none; }
+    .ans-number { color:#075cff; background:#e2ebff; border:2px solid #8eb2ff; }
+    .shadow { display:none; }
+    .keypad-section { max-width:420px !important; }
+    .keypad { background:transparent; border:0; box-shadow:none; padding:0 !important; gap:12px !important; }
+    .key-btn { height:clamp(65px,10vh,100px) !important; border:1px solid rgba(255,255,255,.9); border-radius:20px; background:linear-gradient(#f9fbff,#e7edf8); color:#15171c; font-size:clamp(30px,4vw,54px) !important; font-weight:700; box-shadow:0 5px 0 #c8d5ec, 0 9px 15px rgba(55,84,142,.22); }
+    .key-btn:hover { background:#fff; } .key-btn:active { transform:translateY(3px); box-shadow:0 2px 0 #c8d5ec; }
+    .key-btn.action-clear, .key-btn.action-back { background:#dce6f7; color:#505b70; font-size:28px !important; }
+    .next-btn { margin-top:20px; padding:18px !important; border:0; border-radius:999px; color:#fff; background:linear-gradient(#3380ff,#0050ee); box-shadow:0 6px 0 #0644d1, 0 16px 25px rgba(0,75,222,.28); font-size:24px !important; }
+    @media (max-width:760px) {
+      html, body { height:auto; min-height:100%; overflow:auto; }
+      .app-container { min-height:100dvh; height:auto; }
+      .controls-bar { padding:10px; border-radius:24px; }
+      .range-btn, .type-btn { padding:8px; font-size:12px; } .op-btn { width:34px; height:34px; font-size:20px; }
+      .card { width:min(92vw,560px) !important; height: min(32vh,270px) !important; }
+      .card-face { border-radius:28px; }
+      .formula { font-size:clamp(36px,9vw,60px) !important; }
+      .key-btn { height:clamp(44px,7vh,60px) !important; font-size:25px !important; }
+      .next-btn { margin-top:8px; padding:12px !important; font-size:17px !important; }
+    }
+
+    /* Let the page grow when controls wrap or the screen is short. */
+    html, body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }
+    .app-container { height: auto; min-height: 100dvh; }
+    .controls-bar { flex: none; }
+    .workspace { width: 100%; flex: 1 0 auto; min-height: 0; }
+    @media (orientation: portrait) {
+      .workspace { flex-direction: column !important; gap: 24px !important; padding: 28px 0 !important; }
+      .card-section, .keypad-section { flex: none !important; width: 100% !important; min-width: 0 !important; }
+      .card { width: min(88vw, 700px) !important; height: clamp(200px, 30dvh, 380px) !important; }
+      .keypad-section { max-width: min(88vw, 480px) !important; }
+      .key-btn { height: clamp(52px, 7dvh, 80px) !important; }
+      .formula { font-size: clamp(36px, 9vw, 80px) !important; }
+      .formula.count-3 { font-size: clamp(28px, 6.5vw, 52px) !important; gap: 8px !important; }
+      .formula.has-bracket { font-size: clamp(23px, 5.7vw, 46px) !important; gap: 5px !important; }
+    }
+    @media (orientation: landscape) and (max-height: 600px) {
+      .app-container { padding-top: 12px; padding-bottom: 20px; }
+      .workspace, .app-container.is-landscape .workspace { flex-direction: row !important; align-items: center !important; gap: 20px !important; padding: 24px 0 !important; }
+      .card-section { flex: 1 1 55% !important; width: auto !important; min-width: 0; }
+      .card { width: min(53vw, 700px) !important; height: 220px !important; }
+      .keypad-section { flex: 1 1 35% !important; width: auto !important; min-width: 0 !important; }
+      .key-btn { height: 52px !important; }
+    }
+    @media (orientation: portrait) and (min-width: 600px) {
+      .app-container { padding: max(env(safe-area-inset-top), 24px) 4vw max(env(safe-area-inset-bottom), 24px); }
+      .controls-bar { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; padding: 14px; }
+      .range-group { grid-column: span 7; }
+      .type-group { grid-column: span 5; }
+      .op-group { grid-column: span 4; }
+      .stats-badge { grid-column: span 3; justify-content: center; }
+      .wrong-btn { grid-column: span 3; justify-content: center; }
+      .sound-btn { grid-column: span 2; justify-self: center; }
+      .range-group, .type-group, .op-group { justify-content: center; min-width: 0; }
+      .range-btn, .type-btn { flex: 1; padding: 10px 5px; font-size: clamp(13px, 1.8vw, 16px); }
+      .workspace { justify-content: space-evenly !important; gap: 24px !important; }
+      .card { width: min(88vw, 720px) !important; height: clamp(240px, 29dvh, 360px) !important; }
+      .keypad-section { max-width: min(70vw, 500px) !important; }
+      .key-btn { height: clamp(58px, 7dvh, 78px) !important; }
+      .next-btn { margin-top: 10px; }
+    }
+    @media (orientation: landscape) and (min-height: 601px) {
+      .workspace { gap: 3vw !important; }
+      .card-section { flex: 1.7 !important; max-width: 860px !important; }
+      .card, .app-container.is-landscape .card { width: min(59vw, 860px) !important; height: min(54vh, 500px) !important; }
+      .keypad-section, .app-container.is-landscape .keypad-section { flex: 1 !important; max-width: 460px !important; }
+      .key-btn, .app-container.is-landscape .key-btn { height: clamp(76px, 10vh, 110px) !important; }
+      .app-container.is-landscape .formula { font-size: clamp(80px, 7.5vw, 112px) !important; }
+      .app-container.is-landscape .formula.count-3 { font-size: clamp(56px, 5.2vw, 76px) !important; }
+      .app-container.is-landscape .formula.has-bracket { font-size: clamp(48px, 4.5vw, 66px) !important; }
+      .app-container.is-landscape .input-box, .app-container.is-landscape .ans-number { min-width: 1.15em !important; height: 1.2em !important; font-size: .85em !important; }
+      .app-container.is-landscape .key-btn { font-size: clamp(42px, 4.5vw, 58px) !important; }
+      .app-container.is-landscape .key-btn.action-clear, .app-container.is-landscape .key-btn.action-back { font-size: clamp(32px, 3.5vw, 44px) !important; }
+      .range-btn, .type-btn { font-size: clamp(17px, 1.55vw, 21px); }
+      .stats-label, .wrong-btn { font-size: 16px; }
+      .stats-num { font-size: 22px; }
+      .app-container.is-landscape .next-btn { font-size: clamp(24px, 2.5vw, 32px) !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container" id="appContainer">
+    <!-- 顶部极简设置：范围 + 运算题型 + 运算符多选 + 错题本 -->
+    <header class="controls-bar">
+      <div class="range-group" aria-label="数值范围">
+        <button class="range-btn" data-range="10">10以内</button>
+        <button class="range-btn active" data-range="20">20以内</button>
+        <button class="range-btn" data-range="50">50以内</button>
+        <button class="range-btn" data-range="100">100以内</button>
+      </div>
+      <!-- 数值范围 -->
+      <select id="rangeSelect" class="pill-select" hidden style="display:none">
+        <option value="10">十以内</option>
+        <option value="20" selected>20 以内</option>
+        <option value="50">50 以内</option>
+        <option value="100">100 以内</option>
+      </select>
+
+      <!-- 运算题型 -->
+      <div class="type-group" role="group" aria-label="运算题型">
+        <button type="button" class="type-btn active" data-type="2" aria-pressed="true">两数运算</button>
+        <button type="button" class="type-btn" data-type="3" aria-pressed="false">三数运算</button>
+        <button type="button" class="type-btn" data-type="bracket" aria-pressed="false">带括号</button>
+      </div>
+      <select id="typeSelect" hidden style="display:none">
+        <option value="2" selected>两位数 (2个运算数)</option>
+        <option value="3">三位数 (3个运算数)</option>
+        <option value="bracket">带括号运算 (含小括号)</option>
+      </select>
+      
+      <!-- 加减乘除自由多选组合 -->
+      <div class="op-group">
+        <button class="op-btn active" data-op="+" title="加法">+</button>
+        <button class="op-btn active" data-op="−" title="减法">−</button>
+        <button class="op-btn active" data-op="×" title="乘法">×</button>
+        <button class="op-btn active" data-op="÷" title="除法">÷</button>
+      </div>
+
+      <!-- 答题战绩统计徽章 -->
+      <div id="statsBadge" class="stats-badge" title="本次答题战绩：已答对题数与连对">
+        <span class="stats-label">答对</span>
+        <span id="correctCountText" class="stats-num">0</span>
+        <span id="streakBadge" class="streak-pill hidden">0连对</span>
+      </div>
+
+      <!-- 错题集入口 -->
+      <button id="wrongBtn" class="wrong-btn" title="点击重练错题">
+        <span id="wrongBtnText">错题本 (0)</span>
+      </button>
+
+      <!-- 音效开关 -->
+      <button id="soundBtn" class="sound-btn" title="关闭音效" aria-label="关闭音效" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="sound-wave" d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/><path class="mute-line" d="M16 9l5 6m0-6-5 6"/></svg>
+      </button>
+    </header>
+
+    <!-- 主工作区：iPad 横屏为左右两列，竖屏为上下居中 -->
+    <main class="workspace">
+      <!-- 左侧（竖屏为上方）：大号 3D 悬浮卡片 -->
+      <section class="card-section">
+        <div class="floating-box">
+          <div id="comboToast" class="combo-toast">3连对 太棒了！</div>
+          <div id="card" class="card">
+            <!-- 正面：算术题（可直接在卡片输入答案） -->
+            <div class="card-face card-front">
+              <div id="frontFormula" class="formula"></div>
+            </div>
+
+            <!-- 背面：答案 -->
+            <div class="card-face card-back">
+              <div id="backFormula" class="formula"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 呼吸浮动投影 -->
+        <div class="shadow"></div>
+      </section>
+
+      <!-- 右侧（竖屏为下方）：专属大号数字输入键盘 -->
+      <section class="keypad-section">
+        <div class="keypad">
+          <button class="key-btn" data-key="1">1</button>
+          <button class="key-btn" data-key="2">2</button>
+          <button class="key-btn" data-key="3">3</button>
+          <button class="key-btn" data-key="4">4</button>
+          <button class="key-btn" data-key="5">5</button>
+          <button class="key-btn" data-key="6">6</button>
+          <button class="key-btn" data-key="7">7</button>
+          <button class="key-btn" data-key="8">8</button>
+          <button class="key-btn" data-key="9">9</button>
+          <button class="key-btn action-clear" data-key="clear" aria-label="清空">C</button>
+          <button class="key-btn" data-key="0">0</button>
+          <button class="key-btn action-back" data-key="back">⌫</button>
+        </div>
+
+        <button id="nextBtn" class="next-btn">跳过 / 下一题</button>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const appContainer = document.getElementById('appContainer');
+    const card = document.getElementById('card');
+    const frontFormula = document.getElementById('frontFormula');
+    const backFormula = document.getElementById('backFormula');
+    const nextBtn = document.getElementById('nextBtn');
+    const rangeSelect = document.getElementById('rangeSelect');
+    const typeSelect = document.getElementById('typeSelect');
+    const opBtns = document.querySelectorAll('.op-btn');
+    const wrongBtn = document.getElementById('wrongBtn');
+    const wrongBtnText = document.getElementById('wrongBtnText');
+    const soundBtn = document.getElementById('soundBtn');
+    const statsBadge = document.getElementById('statsBadge');
+    const correctCountText = document.getElementById('correctCountText');
+    const streakBadge = document.getElementById('streakBadge');
+    const comboToast = document.getElementById('comboToast');
+
+    let isFlipped = false;
+    let currentInput = '';
+    let currentTargetAnswer = 0;
+    let currentProblem = null;
+    let isEvaluating = false;
+    let isTransitioning = false;
+
+    // 答题战绩与连击统计
+    let correctCount = 0;
+    let currentStreak = 0;
+    let comboTimer = null;
+
+    // 错题集
+    let wrongList = [];
+    let isReviewMode = false;
+
+    // ==========================================
+    // 零依赖 Web Audio 高品质原生音效合成器
+    // 专为 iPad / iOS Safari 深度调优：零延迟、纯净无噪音
+    // ==========================================
+    const Sound = {
+      ctx: null,
+      enabled: true,
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.ctx = new AudioContextClass();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+
+      // 1. 按键点击音效：极具质感的柔和气泡/木质触感微咔哒声
+      tap(pitch = 1) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(460 * pitch, now);
+          osc.frequency.exponentialRampToValueAtTime(140 * pitch, now + 0.035);
+
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.04);
+        } catch (e) {}
+      },
+
+      // 2. 回答正确音效：阳光欢快的大三和弦清脆琶音 (Do-Mi-Sol-HighDo)
+      correct() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const startTime = this.ctx.currentTime + idx * 0.075;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, startTime);
+
+            gain.gain.setValueAtTime(0.2, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.36);
+          });
+        } catch (e) {}
+      },
+
+      // 3. 回答错误音效：温和友好不刺耳的低音双降调 (咚-咚)
+      wrong() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const tones = [240, 170];
+          tones.forEach((freq, idx) => {
+            const startTime = this.ctx.currentTime + idx * 0.12;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.75, startTime + 0.12);
+
+            gain.gain.setValueAtTime(0.18, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.13);
+          });
+        } catch (e) {}
+      },
+
+      // 4. 切题抽牌动效音：轻柔清脆的纸牌滑动空气声
+      slide() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(620, now + 0.05);
+          osc.frequency.exponentialRampToValueAtTime(260, now + 0.11);
+
+          gain.gain.setValueAtTime(0.07, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } catch (e) {}
+      },
+
+      // 5. 翻转卡片音效：立体翻牌空气声
+      flip() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.linearRampToValueAtTime(380, now + 0.07);
+          osc.frequency.linearRampToValueAtTime(160, now + 0.16);
+
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.17);
+        } catch (e) {}
+      },
+
+      // 6. 连对里程碑成就音效：大三和弦 + 高音泛音辉煌琶音
+      celebrate() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+          notes.forEach((freq, idx) => {
+            const startTime = this.ctx.currentTime + idx * 0.065;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, startTime);
+
+            gain.gain.setValueAtTime(0.22, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(startTime);
+            osc.stop(startTime + 0.46);
+          });
+        } catch (e) {}
+      }
+    };
+
+    // iPad / 移动端在首次触摸时解锁音频通道
+    ['pointerdown', 'touchstart', 'click'].forEach(evt => {
+      window.addEventListener(evt, () => Sound.init(), { once: true, passive: true });
+    });
+
+    // 音效开关切换
+    soundBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      Sound.enabled = !Sound.enabled;
+      soundBtn.classList.toggle('muted', !Sound.enabled);
+      soundBtn.title = Sound.enabled ? '关闭音效' : '开启音效';
+      soundBtn.setAttribute('aria-label', soundBtn.title);
+      soundBtn.setAttribute('aria-pressed', String(Sound.enabled));
+      if (Sound.enabled) Sound.tap();
+    });
+
+    // 实时检测屏幕方向（双重保障左右分栏自适应）
+    function updateLayoutOrientation() {
+      const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth >= 600;
+      appContainer.classList.toggle('is-landscape', isLandscape);
+    }
+    window.addEventListener('resize', updateLayoutOrientation);
+    window.addEventListener('orientationchange', () => setTimeout(updateLayoutOrientation, 100));
+    updateLayoutOrientation();
+
+    // 当前选中的运算集合
+    const activeOps = new Set(['+', '−', '×', '÷']);
+
+    opBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        Sound.tap();
+        const op = btn.dataset.op;
+        if (activeOps.has(op)) {
+          if (activeOps.size === 1) return;
+          activeOps.delete(op);
+          btn.classList.remove('active');
+        } else {
+          activeOps.add(op);
+          btn.classList.add('active');
+        }
+        nextQuestion(true);
+      });
+    });
+
+    wrongBtn.addEventListener('click', () => {
+      if (wrongList.length === 0) return;
+      Sound.tap();
+      isReviewMode = !isReviewMode;
+      wrongBtn.classList.toggle('reviewing', isReviewMode);
+      if (isReviewMode) {
+        wrongBtnText.textContent = `重练中 (${wrongList.length})`;
+      } else {
+        wrongBtnText.textContent = `错题本 (${wrongList.length})`;
+      }
+      nextQuestion(true);
+    });
+
+    function updateWrongBadge() {
+      wrongBtn.classList.toggle('has-wrong', wrongList.length > 0);
+      if (isReviewMode) {
+        wrongBtnText.textContent = `重练中 (${wrongList.length})`;
+      } else {
+        wrongBtnText.textContent = `错题本 (${wrongList.length})`;
+      }
+    }
+
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function calc(a, op, b) {
+      if (op === '+') return a + b;
+      if (op === '−') return a - b;
+      if (op === '×') return a * b;
+      if (op === '÷') return b !== 0 && a % b === 0 ? a / b : null;
+      return null;
+    }
+
+    // 题目生成核心
+    function generateProblem(maxVal, type) {
+      const ops = Array.from(activeOps);
+
+      if (type === '2') {
+        for (let t = 0; t < 200; t++) {
+          const op = ops[rand(0, ops.length - 1)];
+          let a, b, res;
+
+          if (op === '+') {
+            a = rand(1, maxVal - 1);
+            b = rand(1, maxVal - a);
+            res = a + b;
+          } else if (op === '−') {
+            a = rand(2, maxVal);
+            b = rand(1, a - 1);
+            res = a - b;
+          } else if (op === '×') {
+            a = rand(1, Math.min(12, maxVal));
+            b = rand(1, Math.min(12, Math.floor(maxVal / a) || 1));
+            res = a * b;
+          } else {
+            b = rand(1, Math.min(12, maxVal));
+            res = rand(1, Math.min(12, Math.floor(maxVal / b) || 1));
+            a = b * res;
+          }
+
+          if (res !== null && res >= 0 && res <= maxVal && a <= maxVal && b <= maxVal) {
+            return { type: '2', nums: [a, b], ops: [op], result: res };
+          }
+        }
+        return { type: '2', nums: [2, 3], ops: ['+'], result: 5 };
+      } else if (type === '3') {
+        for (let t = 0; t < 400; t++) {
+          const op1 = ops[rand(0, ops.length - 1)];
+          const op2 = ops[rand(0, ops.length - 1)];
+
+          let a = rand(1, maxVal);
+          let b = rand(1, maxVal);
+          let c = rand(1, maxVal);
+          let res = null;
+
+          const isOp1High = (op1 === '×' || op1 === '÷');
+          const isOp2High = (op2 === '×' || op2 === '÷');
+
+          if (isOp1High && !isOp2High) {
+            const mid = calc(a, op1, b);
+            if (mid !== null && mid >= 0 && mid <= maxVal) res = calc(mid, op2, c);
+          } else if (!isOp1High && isOp2High) {
+            const mid = calc(b, op2, c);
+            if (mid !== null && mid >= 0 && mid <= maxVal) res = calc(a, op1, mid);
+          } else {
+            const mid = calc(a, op1, b);
+            if (mid !== null && mid >= 0 && mid <= maxVal) res = calc(mid, op2, c);
+          }
+
+          if (res !== null && Number.isInteger(res) && res >= 0 && res <= maxVal) {
+            return { type: '3', nums: [a, b, c], ops: [op1, op2], result: res };
+          }
+        }
+        return { type: '3', nums: [2, 3, 4], ops: ['+', '+'], result: 9 };
+      } else {
+        for (let t = 0; t < 500; t++) {
+          const op1 = ops[rand(0, ops.length - 1)];
+          const op2 = ops[rand(0, ops.length - 1)];
+          const bracketPos = Math.random() > 0.5 ? 'left' : 'right';
+
+          let a = rand(1, maxVal);
+          let b = rand(1, maxVal);
+          let c = rand(1, maxVal);
+          let res = null;
+
+          if (bracketPos === 'left') {
+            const inner = calc(a, op1, b);
+            if (inner !== null && inner >= 0 && inner <= maxVal) res = calc(inner, op2, c);
+          } else {
+            const inner = calc(b, op2, c);
+            if (inner !== null && inner >= 0 && inner <= maxVal) res = calc(a, op1, inner);
+          }
+
+          if (res !== null && Number.isInteger(res) && res >= 0 && res <= maxVal) {
+            return { type: 'bracket', bracketPos, nums: [a, b, c], ops: [op1, op2], result: res };
+          }
+        }
+        return { type: 'bracket', bracketPos: 'left', nums: [2, 3, 2], ops: ['+', '×'], result: 10 };
+      }
+    }
+
+    // 出题与界面渲染（带平滑抽牌过渡动效）
+    function nextQuestion(animate = true) {
+      if (isTransitioning) return;
+
+      currentInput = '';
+      isEvaluating = false;
+
+      // 如果当前正翻在背面，先翻回正面
+      if (isFlipped) {
+        flip(false);
+      }
+
+      // 错题复习模式
+      if (isReviewMode) {
+        if (wrongList.length === 0) {
+          isReviewMode = false;
+          updateWrongBadge();
+          return nextQuestion(animate);
+        }
+        currentProblem = wrongList[0];
+      } else {
+        const maxVal = parseInt(rangeSelect.value, 10);
+        const type = typeSelect.value;
+        currentProblem = generateProblem(maxVal, type);
+      }
+
+      const { type, nums, ops, result, bracketPos } = currentProblem;
+      const totalItems = [...nums, result];
+      const missingIndex = rand(0, totalItems.length - 1);
+      currentProblem.missingIndex = missingIndex;
+
+      currentTargetAnswer = totalItems[missingIndex];
+
+      let formulaClass = 'formula';
+      if (type === '3') formulaClass += ' count-3';
+      if (type === 'bracket') formulaClass += ' has-bracket';
+
+      function renderNumFront(idx, val) {
+        if (idx === missingIndex) {
+          return `<span id="inputBox" class="input-box empty">?</span>`;
+        }
+        return `<span class="num">${val}</span>`;
+      }
+
+      function renderNumBack(idx, val) {
+        if (idx === missingIndex) {
+          return `<span class="ans-number">${val}</span>`;
+        }
+        return `<span class="num">${val}</span>`;
+      }
+
+      let frontHtml = '';
+      let backHtml = '';
+
+      if (type === 'bracket') {
+        const item0 = { front: renderNumFront(0, nums[0]), back: renderNumBack(0, nums[0]) };
+        const item1 = { front: renderNumFront(1, nums[1]), back: renderNumBack(1, nums[1]) };
+        const item2 = { front: renderNumFront(2, nums[2]), back: renderNumBack(2, nums[2]) };
+        const itemRes = { front: renderNumFront(3, result), back: renderNumBack(3, result) };
+
+        if (bracketPos === 'left') {
+          frontHtml = `<span class="bracket">(</span>${item0.front} <span class="op">${ops[0]}</span> ${item1.front}<span class="bracket">)</span> <span class="op">${ops[1]}</span> ${item2.front} <span class="equal">=</span> ${itemRes.front}`;
+          backHtml = `<span class="bracket">(</span>${item0.back} <span class="op">${ops[0]}</span> ${item1.back}<span class="bracket">)</span> <span class="op">${ops[1]}</span> ${item2.back} <span class="equal">=</span> ${itemRes.back}`;
+        } else {
+          frontHtml = `${item0.front} <span class="op">${ops[0]}</span> <span class="bracket">(</span>${item1.front} <span class="op">${ops[1]}</span> ${item2.front}<span class="bracket">)</span> <span class="equal">=</span> ${itemRes.front}`;
+          backHtml = `${item0.back} <span class="op">${ops[0]}</span> <span class="bracket">(</span>${item1.back} <span class="op">${ops[1]}</span> ${item2.back}<span class="bracket">)</span> <span class="equal">=</span> ${itemRes.back}`;
+        }
+      } else {
+        for (let i = 0; i < nums.length; i++) {
+          frontHtml += renderNumFront(i, nums[i]);
+          backHtml += renderNumBack(i, nums[i]);
+
+          if (i < ops.length) {
+            frontHtml += ` <span class="op">${ops[i]}</span> `;
+            backHtml += ` <span class="op">${ops[i]}</span> `;
+          }
+        }
+
+        const itemRes = { front: renderNumFront(nums.length, result), back: renderNumBack(nums.length, result) };
+        frontHtml += ` <span class="equal">=</span> ${itemRes.front}`;
+        backHtml += ` <span class="equal">=</span> ${itemRes.back}`;
+      }
+
+      if (!animate) {
+        frontFormula.className = formulaClass;
+        backFormula.className = formulaClass;
+        frontFormula.innerHTML = frontHtml;
+        backFormula.innerHTML = backHtml;
+        return;
+      }
+
+      // 丝滑抽牌过渡动效：旧算式平滑向左滑出，新算式从右侧弹簧滑入
+      isTransitioning = true;
+      frontFormula.classList.add('slide-out-left');
+
+      setTimeout(() => {
+        frontFormula.className = formulaClass + ' slide-in-right';
+        backFormula.className = formulaClass;
+        frontFormula.innerHTML = frontHtml;
+        backFormula.innerHTML = backHtml;
+
+        card.classList.add('shuffle');
+        Sound.slide();
+
+        setTimeout(() => {
+          frontFormula.classList.remove('slide-in-right');
+          card.classList.remove('shuffle');
+          isTransitioning = false;
+        }, 260);
+      }, 140);
+    }
+
+    // 翻转卡片
+    function flip(playSound = true) {
+      isFlipped = !isFlipped;
+      card.classList.toggle('flipped', isFlipped);
+      if (playSound) Sound.flip();
+    }
+
+    // 更新卡片输入框展示（带数字填入弹性 pop 动效）
+    function updateInputDisplay(animatePop = false) {
+      const inputBox = document.getElementById('inputBox');
+      if (!inputBox) return;
+
+      if (currentInput === '') {
+        inputBox.textContent = '?';
+        inputBox.classList.add('empty');
+      } else {
+        inputBox.textContent = currentInput;
+        inputBox.classList.remove('empty');
+        if (animatePop) {
+          inputBox.classList.remove('pop');
+          void inputBox.offsetWidth; // 触发 reflow 重置动画
+          inputBox.classList.add('pop');
+        }
+      }
+    }
+
+    // 键盘按键与判题逻辑
+    function handleKey(key) {
+      if (isEvaluating || isTransitioning) return;
+
+      // 如果当前正处于背面看答案状态，按任意键盘键自动翻回正面作答
+      if (isFlipped) {
+        flip();
+      }
+
+      if (key === 'clear') {
+        Sound.tap(0.85);
+        currentInput = '';
+        updateInputDisplay();
+        return;
+      }
+
+      if (key === 'back') {
+        Sound.tap(0.9);
+        currentInput = currentInput.slice(0, -1);
+        updateInputDisplay();
+        return;
+      }
+
+      if (currentInput.length >= 4) return;
+      Sound.tap(1.0 + currentInput.length * 0.08);
+      currentInput += key;
+      updateInputDisplay(true);
+
+      const targetStr = String(currentTargetAnswer);
+      if (currentInput.length >= targetStr.length) {
+        evaluateAnswer();
+      }
+    }
+
+    function triggerStreakFeedback(streak) {
+      if (!streakBadge) return;
+      if (streak >= 2) {
+        streakBadge.textContent = `${streak}连对`;
+        streakBadge.classList.remove('hidden');
+      } else {
+        streakBadge.classList.add('hidden');
+      }
+
+      // 达成连对里程碑 (3连对、5连对、8连对、10连对、以及每+5连对)
+      if (streak >= 3 && (streak === 3 || streak === 5 || streak === 8 || streak % 5 === 0)) {
+        Sound.celebrate();
+        let cheeringWord = '太棒了！';
+        if (streak >= 10) cheeringWord = '超神啦！';
+        else if (streak >= 5) cheeringWord = '势不可挡！';
+
+        if (comboToast) {
+          comboToast.textContent = `${streak}连对 ${cheeringWord}`;
+          comboToast.classList.add('show');
+
+          clearTimeout(comboTimer);
+          comboTimer = setTimeout(() => {
+            comboToast.classList.remove('show');
+          }, 1600);
+        }
+      }
+    }
+
+    // 判定回答（带声效 + 庆祝微弹跳 + 连击反馈 + 错误抖动）
+    function evaluateAnswer() {
+      if (isEvaluating) return;
+      isEvaluating = true;
+
+      const inputBox = document.getElementById('inputBox');
+      const entered = parseInt(currentInput, 10);
+
+      if (entered === currentTargetAnswer) {
+        // 回答正确：更新正确题数与连对战绩，触发数字跳动
+        correctCount++;
+        currentStreak++;
+
+        if (correctCountText) {
+          correctCountText.textContent = correctCount;
+          correctCountText.classList.remove('bump');
+          void correctCountText.offsetWidth;
+          correctCountText.classList.add('bump');
+          setTimeout(() => correctCountText.classList.remove('bump'), 300);
+        }
+
+        triggerStreakFeedback(currentStreak);
+
+        // 正面绿框微放大，欢快琶音，卡片小跳跃，460ms 后丝滑抽牌切下一题
+        if (inputBox) {
+          inputBox.classList.remove('wrong');
+          inputBox.classList.add('correct');
+        }
+
+        card.classList.add('cheer');
+        Sound.correct();
+
+        if (isReviewMode) {
+          wrongList.shift();
+          updateWrongBadge();
+        }
+
+        setTimeout(() => {
+          card.classList.remove('cheer');
+          nextQuestion(true);
+        }, 460);
+      } else {
+        // 回答错误：连对清零
+        currentStreak = 0;
+        triggerStreakFeedback(0);
+
+        // 红框剧烈抖动，友好低音咚咚提示，记入错题集，550ms 后清空输入框让孩子立即重试
+        if (inputBox) {
+          inputBox.classList.remove('correct');
+          inputBox.classList.add('wrong');
+        }
+
+        Sound.wrong();
+
+        const problemJson = JSON.stringify(currentProblem);
+        if (!wrongList.some(p => JSON.stringify(p) === problemJson)) {
+          wrongList.push(JSON.parse(problemJson));
+          updateWrongBadge();
+        }
+
+        setTimeout(() => {
+          isEvaluating = false;
+          currentInput = '';
+          updateInputDisplay();
+          if (inputBox) inputBox.classList.remove('wrong');
+        }, 550);
+      }
+    }
+
+    // 虚拟键盘点击事件
+    document.querySelectorAll('.key-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleKey(btn.dataset.key);
+      });
+    });
+
+    // 电脑物理键盘输入支持
+    window.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        handleKey(e.key);
+      } else if (e.key === 'Backspace') {
+        handleKey('back');
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        handleKey('clear');
+      } else if (e.key === 'Enter') {
+        if (currentInput.length > 0) evaluateAnswer();
+      }
+    });
+
+    document.querySelectorAll('.range-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        rangeSelect.value = button.dataset.range;
+        document.querySelectorAll('.range-btn').forEach(item => item.classList.toggle('active', item === button));
+        rangeSelect.dispatchEvent(new Event('change'));
+      });
+    });
+
+    rangeSelect.addEventListener('change', () => {
+      Sound.tap();
+      nextQuestion(true);
+    });
+
+    document.querySelectorAll('.type-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        if (typeSelect.value === button.dataset.type) return;
+        typeSelect.value = button.dataset.type;
+        document.querySelectorAll('.type-btn').forEach(item => {
+          const selected = item === button;
+          item.classList.toggle('active', selected);
+          item.setAttribute('aria-pressed', String(selected));
+        });
+        typeSelect.dispatchEvent(new Event('change'));
+      });
+    });
+
+    typeSelect.addEventListener('change', () => {
+      Sound.tap();
+      nextQuestion(true);
+    });
+
+    // 点击卡片手动翻转
+    card.addEventListener('click', () => {
+      if (hasDragged) return;
+      flip();
+    });
+
+    // 手势滑动翻转（触屏/鼠标拖拽）
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let isDown = false;
+    let hasDragged = false;
+
+    card.addEventListener('pointerdown', (e) => {
+      isDown = true;
+      hasDragged = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      currentX = startX;
+      card.classList.add('dragging');
+      try {
+        card.setPointerCapture(e.pointerId);
+      } catch (err) {}
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isDown) return;
+      currentX = e.clientX;
+      const deltaX = currentX - startX;
+      const deltaY = e.clientY - startY;
+
+      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+        hasDragged = true;
+      }
+
+      const baseRot = isFlipped ? 180 : 0;
+      card.style.transform = `rotateY(${baseRot + deltaX * 0.4}deg)`;
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      if (!isDown) return;
+      isDown = false;
+      card.classList.remove('dragging');
+      card.style.transform = '';
+
+      try {
+        card.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+
+      const deltaX = currentX - startX;
+      if (Math.abs(deltaX) > 35) {
+        flip();
+      }
+      setTimeout(() => {
+        hasDragged = false;
+      }, 50);
+    });
+
+    statsBadge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      Sound.tap();
+      if (correctCount > 0) {
+        if (confirm(`当前已答对 ${correctCount} 题！是否重置本次做题战绩？`)) {
+          correctCount = 0;
+          currentStreak = 0;
+          correctCountText.textContent = '0';
+          streakBadge.classList.add('hidden');
+        }
+      }
+    });
+
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      Sound.tap();
+      nextQuestion(true);
+    });
+
+    // 初始生成一道题（无初始滑入延迟）
+    nextQuestion(false);
+  </script>
+</body>
+</html>
